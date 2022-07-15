@@ -127,8 +127,10 @@ app.post("/login", (req, res) => {
 
 //Logs the user out and deletes the cookie
 app.post('/logout', (req, res) => {
+  res.clearCookie("user");
   res.clearCookie("session");
-  res.redirect("/urls");
+  res.clearCookie("session.sig")
+  res.redirect("/login");
 });
 
 //Urls index page that contains urls exclusive to logged in users
@@ -136,6 +138,9 @@ app.get("/urls", (req, res) => {
   let user;
   if (users[req.session.user]) {
     user = users[req.session.user].email
+  } else {
+    res.render("error", {error: "User not logged in"});
+    return;
   }
   const templateVars = { urls: urlsForUser(req.session.user, urlDatabase), user: user || null };
   res.render("urls_index", templateVars);
@@ -152,7 +157,7 @@ app.post("/urls", (req, res) => {
   const longURL = req.body.longURL
   urlDatabase[shortURL] = { longURL, userID: users[req.session.user].id }
   console.log(urlDatabase);
-  res.redirect(`/urls`);
+  res.redirect(`/urls/${shortURL}`);
 });
 
 //New urls page, can only be accessed by users that are logged in 
@@ -174,7 +179,9 @@ app.get("/urls/new", (req, res) => {
 app.post("/urls/:shortURL", (req, res) => {
   const obj = urlDatabase[req.params.shortURL];
   if (req.session.user !== obj.userID) {
-    return res.status(400).send("<p>Error, You can only edit your own urls</p>")
+    const templateVars = { error: "This URL belongs to another user" };
+    res.render("error", templateVars);
+    return;
   }
   const shortURL = req.params.shortURL
   const longURL = req.body.longURL
@@ -188,7 +195,8 @@ app.post("/urls/:shortURL", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const obj = urlDatabase[req.params.shortURL];
   if (req.session.user !== obj.userID) {
-    return res.status(400).send("<p>Error, That URL belongs to another user</p>")
+    const templateVars = { error: "This URL belongs to another user"}
+    res.render("error", templateVars);
   }
   let user;
   if (users[req.session.user]) {
@@ -220,7 +228,8 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post('/urls/:shortURL/delete', (req, res) => {
   const obj = urlDatabase[req.params.shortURL];
   if (req.session.user !== obj.userID) {
-    return res.status(400).send("<p>Error</p>")
+    const templateVars = { error: "Cannot delete another user's URL"}
+    res.render("error", templateVars);
   }
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
