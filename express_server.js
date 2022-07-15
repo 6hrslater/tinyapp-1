@@ -174,7 +174,7 @@ app.get("/urls/new", (req, res) => {
 app.post("/urls/:shortURL", (req, res) => {
   const obj = urlDatabase[req.params.shortURL];
   if (req.session.user !== obj.userID) {
-    return res.status(400).send("<p>Error</p>")
+    return res.status(400).send("<p>Error, You can only edit your own urls</p>")
   }
   const shortURL = req.params.shortURL
   const longURL = req.body.longURL
@@ -188,7 +188,7 @@ app.post("/urls/:shortURL", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const obj = urlDatabase[req.params.shortURL];
   if (req.session.user !== obj.userID) {
-    return res.status(400).send("<p>Error</p>")
+    return res.status(400).send("<p>Error, That URL belongs to another user</p>")
   }
   let user;
   if (users[req.session.user]) {
