@@ -41,6 +41,11 @@ app.get("/urls.json", (req, res) => {
     res.send("Ok"); // Respond with 'Ok' (we will replace this)
   });
 
+  app.get("/u/:id", (req, res) => {
+    // const longURL = ...
+    res.redirect(longURL);
+  });
+
   function generateRandomString() {
     let text = "";
     let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
